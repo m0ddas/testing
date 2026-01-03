@@ -7,16 +7,15 @@ KERNEL_PARAMS="quiet splash"
 
 if grep -q "AuthenticAMD" /proc/cpuinfo; then
     UCODE="amd-ucode"
-    # AMD Max-Performance Stack
+    HOSTNAMEID="arch-desktop"
     GPU_PKGS="$GPU_PKGS vulkan-radeon lib32-vulkan-radeon rocm-opencl-runtime"
     MODULE_NAME="amdgpu"
 
 elif grep -q "GenuineIntel" /proc/cpuinfo; then
     UCODE="intel-ucode"
-    # Intel 13th Gen Optimering
+    HOSTNAMEID="arch-laptop"
     GPU_PKGS="$GPU_PKGS vulkan-intel lib32-vulkan-intel intel-media-driver intel-compute-runtime"
     MODULE_NAME="i915"
-    # Aktivera GuC/HuC för media-prestanda på 13th gen
     KERNEL_PARAMS="$KERNEL_PARAMS i915.enable_guc=3"
 fi
 
@@ -65,11 +64,11 @@ echo "LANG=C.UTF-8" > /etc/locale.conf
 echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
 echo "FONT=ter-124n" >> /etc/vconsole.conf
 
-echo "arch-desktop" > /etc/hostname
+echo "$HOSTNAMEID" > /etc/hostname
 {
   echo "127.0.0.1   localhost"
   echo "::1         localhost"
-  echo "127.0.1.1   arch-desktop.localdomain arch-desktop"
+  echo "127.0.1.1   $HOSTNAMEID.localdomain $HOSTNAMEID"
 } > /etc/hosts
 
 sed -i 's/^#Color/Color/' /etc/pacman.conf
@@ -97,7 +96,7 @@ echo "root:$USER_PASS" | chpasswd
 echo "modda:$USER_PASS" | chpasswd
 sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 
-pacman -Syy
+pacman -Syy --noconfirm
 systemctl enable NetworkManager.service
 systemctl enable NetworkManager-dispatcher.service
 systemctl enable NetworkManager-wait-online.service
